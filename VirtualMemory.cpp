@@ -14,11 +14,12 @@ uint64_t getMask(uint64_t length){
 
 void bin(unsigned n)
 {
-    if (n > 1)
+    if (n > 1) {
         bin(n >> 1);
-
+    }
     printf("%d", n & 1);
 }
+
 
 /*
  * Address managment
@@ -42,7 +43,6 @@ uint64_t getOffset(uint64_t virtual_address){
 uint64_t getPageRoute(uint64_t virtual_address){
     return virtual_address >> OFFSET_WIDTH;
 }
-
 
 void addressDebuger(uint64_t virtual_address){
     std::cout << "Virtual Address: " <<  virtual_address << " ";
@@ -71,81 +71,19 @@ void frameDebug(uint64_t frame_index){
     }
 }
 
+int legalAddress(uint64_t address){
+    return address < 0 || address >= VIRTUAL_MEMORY_SIZE;
+}
 
 /*
  * Page Handlers
  */
+
 void clearFrame(uint64_t frame_index){
     for (int i = 0; i < PAGE_SIZE; ++i) {
         PMwrite(frame_index * PAGE_SIZE + i, 0);
     }
 }
-
-//typedef struct {
-//    word_t empty_frame_index;
-//    uint64_t parent;
-//    int frame_offset;
-//    int max_frame_index;
-//    uint64_t max_page_score;
-//    uint64_t frame_to_evict;
-//    uint64_t parent_of_evicted_frame;
-//    uint64_t current_route;
-//    uint64_t page_to_evict_route;
-//    uint64_t page_swapped_in;
-//    uint64_t empty_frame_offset;
-//    uint64_t parent_frame;
-//} TraverseData;
-//
-///**
-// *
-// * @param frame_index
-// * @param depth
-// * @param data
-// * @return
-// */
-//bool pageTableTraverse(word_t frame_index, int depth, TraverseData &data){
-//
-//    if (depth == TABLES_DEPTH){
-//        int abs_diff = abs(data.page_swapped_in, data.current_route);  // TODO need to deal with page keys
-//        int page_score = min(NUM_PAGES - abs_diff, abs_diff);
-//        if (page_score > data.max_page_score){
-//            data.max_page_score = page_score;
-//            data.frame_to_evict = frame_index;
-//            data.parent_of_evicted_frame = data.parent * PAGE_SIZE + data.frame_offset;
-//            data.page_to_evict_route = data.current_route;
-//        }
-//        return false;
-//    }
-//
-//    if(frame_index > data.max_frame_index){
-//        data.max_frame_index = frame_index;
-//    }
-//
-//    data.current_route = data.current_route << OFFSET_WIDTH;
-//    bool isTableEmpty = true;
-//    for (int i = 0; i < PAGE_SIZE; ++i) {
-//        word_t value;
-//        PMread(frame_index * PAGE_SIZE + i, &value);
-//        if (value != 0){
-//            isTableEmpty = false;
-//            data.parent = frame_index;
-//            data.frame_offset = i;
-//            data.current_route += i;
-//            bool hasEmptyChildren = pageTableTraverse(value, depth + 1, data);
-//            data.current_route -= i;
-//            if (hasEmptyChildren){
-//                return true;
-//            }
-//        }
-//    }
-//
-//    if (isTableEmpty && frame_index != data.parent_frame){
-//        data.empty_frame_offset = data.frame_offset;
-//        data.empty_frame_index = frame_index;
-//        return true;
-//    }
-//    return false;
-//}
 
 
 typedef struct {
@@ -158,8 +96,6 @@ typedef struct {
     uint64_t global_opt3_frame_to_evict;
     uint64_t global_opt3_page_to_evict;
     uint64_t global_opt3_parent_of_page_to_evict;
-
-
 
     // current data
     uint64_t parent_frame;
@@ -188,7 +124,6 @@ bool pageTableTraverse(word_t frame_index, int depth, TraverseData *data, uint64
             data->global_opt3_parent_of_page_to_evict = data->parent_frame * PAGE_SIZE + data->parent_offset;
             data->global_opt3_page_to_evict = current_route;
         }
-
         return false;
     }
 
@@ -200,7 +135,6 @@ bool pageTableTraverse(word_t frame_index, int depth, TraverseData *data, uint64
         PMread(frame_index * PAGE_SIZE + i, &value);
         if (value != 0){
             isTableEmpty = false;
-
             data->parent_frame = frame_index;
             data->parent_offset = i;
 
@@ -222,10 +156,6 @@ bool pageTableTraverse(word_t frame_index, int depth, TraverseData *data, uint64
 
 
 
-
-
-
-
 word_t getFrame(uint64_t page_swapped_in, uint64_t parent_frame){
     // Traversing the graph and extracting parameters
     TraverseData data;
@@ -239,8 +169,6 @@ word_t getFrame(uint64_t page_swapped_in, uint64_t parent_frame){
 
     data.parent_frame = 0;
     data.parent_offset = 0;
-    // data.current_route = 0;
-
     data.blocked_frame = parent_frame;
     data.page_swapped_in = page_swapped_in;
 
@@ -248,20 +176,15 @@ word_t getFrame(uint64_t page_swapped_in, uint64_t parent_frame){
 
     // Option 1 - look for an empty table
     if (has_empty_table){
-        std::cout << "Opt [1] returned " << data.global_opt1_empty_frame_index << std::endl;
         return data.global_opt1_empty_frame_index;
     }
 
     // Option 2 - check max frame index (calculated in option 1)
     if (data.global_opt2_max_frame_index + 1 < NUM_FRAMES){
-        std::cout << "Opt [2] returned " << data.global_opt2_max_frame_index << std::endl;
-
         return data.global_opt2_max_frame_index + 1;
     }
 
     // Option 3
-    std::cout << "Opt [3] returned " << std::endl;
-
     PMwrite(data.global_opt3_parent_of_page_to_evict, 0);
     PMevict(data.global_opt3_frame_to_evict, data.global_opt3_page_to_evict);
     return data.global_opt3_frame_to_evict;
@@ -273,7 +196,6 @@ word_t readPage(uint64_t page_number, uint64_t row_number, uint64_t page_swapped
     PMread(page_number * PAGE_SIZE + row_number, &address);
 
     if (address == 0){
-        // TODO ptr may be null
         word_t frame_number = getFrame(page_swapped_in, parent_frame);
 
         if (depth == TABLES_DEPTH - 1){
@@ -299,6 +221,10 @@ void VMinitialize(){
 }
 
 int VMread(uint64_t virtualAddress, word_t* value){
+    if (legalAddress(virtualAddress)){
+        return 0;
+    }
+
     uint64_t current_page = 0;
     for (int i=0; i< TABLES_DEPTH; i++){
         uint64_t row_number = getPageAddress(virtualAddress, i);
@@ -306,50 +232,24 @@ int VMread(uint64_t virtualAddress, word_t* value){
     }
     uint64_t offset = getOffset(virtualAddress);
     PMread(current_page * PAGE_SIZE + offset, value);
+
+    return 1;
 }
 
 int VMwrite(uint64_t virtualAddress, word_t value){
-    addressDebuger(virtualAddress);
+    if (legalAddress(virtualAddress)){
+        return 0;
+    }
     uint64_t current_page = 0;
-//    std::cout << "Route of address " << virtualAddress << std::endl;
     for (int i=0; i< TABLES_DEPTH; i++){
         uint64_t row_number = getPageAddress(virtualAddress, i);
         current_page = readPage(current_page, row_number, getPageRoute(virtualAddress), current_page, i);
-//        std::cout << " --> reading page " << current_page << " in offset " << row_number << std::endl;
     }
     uint64_t offset = getOffset(virtualAddress);
     PMwrite(current_page * PAGE_SIZE + offset, value);
-    // frameDebug(4);
 
-//    std::cout << "WROTE " << value <<" to " <<current_page << " with off set " << offset <<  std::endl;
-
+    return 1;
 }
 
-
-
-//
-//int main(){
-//    VMinitialize();
-////    std::cout << "Offset width: " << OFFSET_WIDTH << " Table depth: " << TABLES_DEPTH << " Page size: " << PAGE_SIZE << std::endl;
-//    for (uint64_t i = 0; i < (2 * NUM_FRAMES); ++i) {
-//        printf("writing to %llu\n", (long long int) i);
-////        addressDebuger(5 * i * PAGE_SIZE);
-//        VMwrite(5 * i * PAGE_SIZE, i);
-//    }
-//
-////    std::cout << "Finished Writing" << RAM_SIZE << std::endl;
-//
-//    for (uint64_t i = 0; i < (2 * NUM_FRAMES); ++i) {
-//        word_t value;
-//        VMread(5 * i * PAGE_SIZE, &value);
-//        getPageRoute(5 * i * PAGE_SIZE);
-//        printf("reading from %llu %d\n", (long long int) i, value);
-//        assert(uint64_t(value) == i);
-//    }
-//    printf("success\n");
-//
-//    return 0;
-//
-//}
 
 
