@@ -22,6 +22,8 @@ all: $(TARGETS)
 $(TARGETS): $(LIBOBJ)
 	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
+#include <cmath>
+
 
 clean:
 	$(RM) $(TARGETS) $(OSMLIB) $(OBJ) $(LIBOBJ) *~ *core

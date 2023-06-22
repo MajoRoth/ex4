@@ -1,10 +1,11 @@
 //
 // Created by amitroth on 5/13/23.
 //
-#include <iostream>
-
 #ifndef OS_EX3_UTILS_H
 #define OS_EX3_UTILS_H
+
+#include <cstdint>
+#include <string>
 
 enum ERR{SYS_ERR, LIB_ERR};
 

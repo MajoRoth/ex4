@@ -44,32 +44,32 @@ uint64_t getPageRoute(uint64_t virtual_address){
     return virtual_address >> OFFSET_WIDTH;
 }
 
-void addressDebuger(uint64_t virtual_address){
-    std::cout << "Virtual Address: " <<  virtual_address << " ";
-    bin(virtual_address);
-    std::cout << std::endl;
-
-    std::cout << "Level  |  value  |  binary" << std::endl;
-    for (int i = 0; i < TABLES_DEPTH; ++i) {
-        uint64_t addr = getPageAddress(virtual_address, i);
-        std::cout << "  "<< i << "    |    " << addr << "    |  ";
-        bin(addr);
-        std::cout << std::endl;
-    }
-    uint64_t offset = getOffset(virtual_address);
-    std::cout << "Offset |    " << offset << "    |  ";
-    bin(offset);
-    std::cout <<  std::endl;
-}
-
-void frameDebug(uint64_t frame_index){
-    std::cout << "Frame: " << frame_index << std::endl;
-    for (int i = 0; i < PAGE_SIZE; ++i) {
-        word_t data;
-        PMread(frame_index * PAGE_SIZE + i, &data);
-        std::cout << data << std::endl;
-    }
-}
+//void addressDebuger(uint64_t virtual_address){
+//    std::cout << "Virtual Address: " <<  virtual_address << " ";
+//    bin(virtual_address);
+//    std::cout << std::endl;
+//
+//    std::cout << "Level  |  value  |  binary" << std::endl;
+//    for (int i = 0; i < TABLES_DEPTH; ++i) {
+//        uint64_t addr = getPageAddress(virtual_address, i);
+//        std::cout << "  "<< i << "    |    " << addr << "    |  ";
+//        bin(addr);
+//        std::cout << std::endl;
+//    }
+//    uint64_t offset = getOffset(virtual_address);
+//    std::cout << "Offset |    " << offset << "    |  ";
+//    bin(offset);
+//    std::cout <<  std::endl;
+//}
+//
+//void frameDebug(uint64_t frame_index){
+//    std::cout << "Frame: " << frame_index << std::endl;
+//    for (int i = 0; i < PAGE_SIZE; ++i) {
+//        word_t data;
+//        PMread(frame_index * PAGE_SIZE + i, &data);
+//        std::cout << data << std::endl;
+//    }
+//}
 
 int legalAddress(uint64_t address){
     return address < 0 || address >= VIRTUAL_MEMORY_SIZE;
