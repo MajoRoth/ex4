@@ -90,9 +90,9 @@ typedef struct {
     // global data
     uint64_t global_opt1_empty_frame_index;
 
-    uint64_t global_opt2_max_frame_index;
+    word_t global_opt2_max_frame_index;
 
-    uint64_t global_opt3_page_score;
+    int global_opt3_page_score;
     uint64_t global_opt3_frame_to_evict;
     uint64_t global_opt3_page_to_evict;
     uint64_t global_opt3_parent_of_page_to_evict;
@@ -103,7 +103,7 @@ typedef struct {
     // uint64_t current_route;
 
     // data supplied ahead
-    uint64_t blocked_frame;
+    word_t blocked_frame;
     uint64_t page_swapped_in;
 
 
