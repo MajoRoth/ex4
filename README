@@ -1,14 +1,16 @@
-erel, amitroth
-Erel Nahum (325177715), Amit Roth (213212798)
-EX: 4
+## cpp virtual memory implementation
 
-FILES:
-VirtualMemory.cpp -- the implementation of requested VirtualMemory.h file
-utils.cpp -- helper functions implementation
-utils.h -- helper functions header
+implementation virtual memory using paging and hirarchial tables.
 
-REMARKS:
-No remarks.
+supported functions are
 
-ANSWERS:
-No questions.
+```
+void VMinitialize();
+```
+
+```
+int VMread(uint64_t virtualAddress, word_t* value);
+
+```
+int VMwrite(uint64_t virtualAddress, word_t value);
+```
